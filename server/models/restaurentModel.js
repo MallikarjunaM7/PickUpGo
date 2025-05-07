@@ -22,6 +22,18 @@ const restaurantSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    items: [
+        {
+            name: {
+                type: String,
+                required: true,
+            },
+            price: {
+                type: Number,
+                required: true,
+            },
+        },
+    ],
 });
 
 const Restaurent = mongoose.models.Restaurant || mongoose.model('Restaurant', restaurantSchema);

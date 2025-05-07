@@ -15,6 +15,23 @@ const userSchema = new mongoose.Schema({
         unique: true,
     },
 
+    cart: [
+        {
+            restarentName: {
+                type: String,
+                required: true,
+            },
+            itemName: {
+                type: String,
+                required: true,
+            },
+            itemQuantity: {
+                type: Number,
+                required: true,
+            },
+        },
+    ],
+
     });
 
 const User = mongoose.model('User', userSchema);

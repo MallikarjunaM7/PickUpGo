@@ -10,6 +10,7 @@ const PORT = process.env.PORT || 5000;
 const connectDB = require('./utils/db.js')
 const authRouter = require('./router/authRouter.js')
 const adminRouter = require('./router/adminRoute.js')
+const homeRouter = require('./router/homeRouter.js')
 
 
 // Middleware setup
@@ -20,6 +21,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use("/api/auth", authRouter)
 app.use("/api/admin", adminRouter)
+app.use("/api/home", homeRouter)
 
 const corsOptions = {
   origin: "http://localhost:5173",

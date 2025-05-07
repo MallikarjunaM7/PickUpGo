@@ -1,6 +1,7 @@
 const Restaurent = require('../models/restaurentModel');
 const User = require('../models/userModel');
 const Admin = require('../models/adminModel');
+const jwt = require('jsonwebtoken');
 
 const bcryptjs = require('bcryptjs');
 
@@ -21,7 +22,7 @@ const registerAdmin = async (req, res) => {
         console.log(newAdmin);
 
         // Create a new restaurant entry for the admin
-        const newRestaurant = new Restaurent({ restaurantName: restaurantName, ownerEmail: email, location: '', cuisineType: [], rating: 1 });
+        const newRestaurant = new Restaurent({ restaurantName: restaurantName, ownerEmail: email, location: '', cuisineType: [], rating: 1, items: [] });
         await newRestaurant.save();
         console.log('New restaurant created:', newRestaurant);
 
@@ -43,24 +44,54 @@ const loginAdmin = async (req, res) => {
         if (!bcryptjs.compareSync(password, admin.password)) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
-        return res.status(200).json({ message: 'Login successful', admin });
-    }
+        
+        const token = jwt.sign({ id: admin._id, email: admin.email, restaurantName: admin.restaurantName }, process.env.JWT_SECRET, { expiresIn: '1h' }); 
+        return res.status(200).json({ message: 'Login successful', token});
+        }
     catch (error) {
         res.status(500).json({ message: 'Error logging in', error });
     }
 }
 
-const getAllRestaurants = async (req, res) => {
+const addItem = async (req, res) => {
+    const {itemName, itemPrice } = req.body;
+    const restaurantName = req.restaurantName;
+    console.log(restaurantName) // Assuming the restaurant name is passed in the request body
+
     try {
-        const restaurants = await Restaurent.find();
-        res.status(200).json(restaurants);
-    } catch (error) {
-        res.status(500).json({ message: 'Error fetching restaurants', error });
+        const restaurant = await Restaurent.findOne({restaurantName});
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+        restaurant.items.push({ name: itemName, price: itemPrice });
+        await restaurant.save();
+        return res.status(200).json({ message: 'Item added successfully', restaurant });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Error adding item', error });
     }
 }
 
+const addCuisenes = async (req, res) => {
+    const { cuisineType } = req.body;
+    const restaurantName = req.restaurantName; // Assuming the restaurant name is passed in the request body
+    console.log(cuisineType) // Assuming the restaurant name is passed in the request body
+    try {
+        const restaurant = await Restaurent.findOne({restaurantName});
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+        restaurant.cuisineType.push(...cuisineType);
+        await restaurant.save();
+        return res.status(200).json({ message: 'Cuisine type added successfully', restaurant });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Error adding cuisine type', error });
+    }
+}
 module.exports = {
     registerAdmin,
     loginAdmin,
-    getAllRestaurants,
+    addItem,
+    addCuisenes
 };
